@@ -9,7 +9,7 @@ const Dashboard = () => {
       <Header />
 
       {/* Banner */}
-      <section className="relative bg-[url('https://placehold.co/1440x160?text=Banner+Image')] bg-cover bg-center h-36 sm:h-44 md:h-56 lg:h-60">
+      <section className="relative bg-[url('src\assets\Hero Center.png')] bg-cover bg-center h-36 sm:h-44 md:h-56 lg:h-60">
         <div className="absolute inset-0 bg-[#0f172a]/80 flex items-center justify-center">
           <p className="text-white text-lg sm:text-xl font-light">
             Get smarter. And have fun.

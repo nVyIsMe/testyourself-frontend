@@ -14,7 +14,7 @@ const Header = () => {
       {/* Logo */}
       <Link to="/dashboard" className="flex items-center gap-2">
         <img
-          src="https://storage.googleapis.com/a1aa/image/7502dc14-0c8b-4f77-495e-7a3f5d240c5f.jpg"
+          src="src\assets\Logo.png"
           alt="CourseMaster logo"
           className="w-6 h-6"
         />

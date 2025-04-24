@@ -1,6 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function WelcomePage() {
+  const navigate = useNavigate();
+
+  const handleJoinClick = () => {
+    navigate('/login'); // This will redirect to the login page
+  };
+
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-black/70">
       <img
@@ -15,14 +22,12 @@ function WelcomePage() {
           Welcome to TestYourself
         </h1>
         <p className="text-3xl mb-6">Your gateway to online learning</p>
-        <button className="bg-teal-600 hover:bg-teal-700 text-xl rounded-full px-4 py-1 mb-2">
-          Sign up
+        <button 
+          onClick={handleJoinClick}
+          className="bg-teal-600 hover:bg-teal-700 text-xl rounded-full px-4 py-1 mb-2"
+        >
+          Join Here!
         </button>
-        <br />
-        <button className="bg-teal-600 hover:bg-teal-700 text-xl rounded-full px-4 py-1 mb-2">
-          Already A Member?
-        </button>
-        <br />
       </div>
     </div>
   );

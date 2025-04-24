@@ -4,8 +4,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 // Auth & onboarding pages
 import WelcomePage from "./pages/Login/WelcomePage";
 import Login from "./pages/Login/Login";
-import LoginConfirm from "./pages/Login/LoginConfirm";
-import AccountSetup from "./pages/Login/AccountSetup";
 
 // Main app pages
 import Dashboard from "./pages/User/Dashboard";
@@ -21,8 +19,6 @@ export default function App() {
         {/* Auth routes */}
         <Route path="/" element={<WelcomePage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/login/confirm" element={<LoginConfirm />} />
-        <Route path="/account-setup" element={<AccountSetup />} />
 
         {/* Main app (protected) routes */}
         <Route path="/dashboard" element={<Dashboard />} />
