@@ -30,4 +30,8 @@ const CourseCard = ({ id, title, subtitle, description }) => (
   </Link>
 );
 
+/**
+ * Need to update this page later onto the project
+ */
+
 export default CourseCard;

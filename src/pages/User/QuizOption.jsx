@@ -19,4 +19,8 @@ const QuizOption = ({ children, selected, correct, onClick }) => {
   );
 };
 
+/**
+ * Need to update this page later onto the project
+ */
+
 export default QuizOption;

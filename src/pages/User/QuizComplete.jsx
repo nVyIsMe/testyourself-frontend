@@ -19,7 +19,7 @@ const QuizComplete = () => {
         </svg>
         <h2 className="font-semibold text-lg mb-2">Congratulations!</h2>
         <p className="text-sm text-gray-600 mb-6">
-          You’ve completed this quiz.
+          You've completed this quiz.
         </p>
         <button
           onClick={() => navigate("/courses")}

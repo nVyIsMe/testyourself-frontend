@@ -64,4 +64,8 @@ const CourseDetail = () => {
   );
 };
 
+/**
+ * Need to update this page later onto the project
+ */
+
 export default CourseDetail;
