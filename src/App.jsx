@@ -12,6 +12,10 @@ import CourseDetail from "./pages/User/CourseDetail";
 import Quiz from "./pages/User/Quiz";
 import QuizComplete from "./pages/User/QuizComplete";
 
+// Admin pages
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminCourseDetail from "./pages/Admin/AdminCourseDetail";
+
 export default function App() {
   return (
     <Router>
@@ -26,6 +30,10 @@ export default function App() {
         <Route path="/courses/:id" element={<CourseDetail />} />
         <Route path="/quiz/:id" element={<Quiz />} />
         <Route path="/quiz/:id/complete" element={<QuizComplete />} />
+
+        {/* Admin routes */}
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/courses/:id" element={<AdminCourseDetail />} />
       </Routes>
     </Router>
   );
