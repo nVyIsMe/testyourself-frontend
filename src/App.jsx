@@ -15,6 +15,7 @@ import QuizComplete from "./pages/User/QuizComplete";
 // Admin pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminCourseDetail from "./pages/Admin/AdminCourseDetail";
+import AdminQuizPage from "./pages/Admin/AdminQuizPage";
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
         {/* Admin routes */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/courses/:id" element={<AdminCourseDetail />} />
+        <Route path="/admin/quizzes/:id" element={<AdminQuizPage />} />
       </Routes>
     </Router>
   );
