@@ -20,7 +20,7 @@ const Dashboard = () => {
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-teal-600 font-semibold text-lg">Recent Quizzes</h2>
-            <Link to="/courses">
+            <Link to="/browse">
             <button className="bg-teal-600 text-white text-xs font-semibold rounded-full px-5 py-1 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
               View all
             </button>
@@ -47,7 +47,7 @@ const Dashboard = () => {
             <h2 className="text-teal-600 font-semibold text-lg">
               Newest Quizzes
             </h2>
-            <Link to="/browse ">
+            <Link to="/courses ">
             <button className="bg-teal-600 text-white text-xs font-semibold rounded-full px-5 py-1 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
               View all
             </button>

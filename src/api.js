@@ -1,6 +1,6 @@
-// src/api.js
 import axios from "axios";
 
+// Tạo instance axios với baseURL
 const API = axios.create({
   baseURL: "http://localhost:5000/api", // Đảm bảo URL này đúng với backend của bạn
 });
@@ -8,7 +8,6 @@ const API = axios.create({
 // Interceptor tự động thêm token JWT vào header Authorization nếu có token trong localStorage
 API.interceptors.request.use(
   (config) => {
-    // Log khi interceptor bắt đầu làm việc
     console.log("--- AXIOS REQUEST INTERCEPTOR START ---");
     console.log("Original request config URL:", config.url);
     console.log("Original request config method:", config.method);
@@ -23,19 +22,13 @@ API.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
       console.log("Authorization header SET with token:", config.headers.Authorization);
     } else {
-      // Nếu không có token, log cảnh báo
-      console.warn("No token found in localStorage. Authorization header NOT set.");
+      console.log("No token found in localStorage. Authorization header NOT set.");
     }
 
-    // Log toàn bộ config object (bao gồm cả headers) trước khi gửi đi
-    // Bạn có thể bỏ comment dòng này nếu muốn xem chi tiết, nhưng nó có thể khá dài
-    // console.log("Full request config before sending:", JSON.stringify(config, null, 2));
-    
     console.log("--- AXIOS REQUEST INTERCEPTOR END ---");
     return config; // Trả về config đã được sửa đổi (hoặc không)
   },
   (error) => {
-    // Log lỗi nếu có vấn đề trong quá trình thiết lập request
     console.error("--- AXIOS REQUEST INTERCEPTOR ERROR ---");
     console.error("Error in request interceptor:", error);
     console.error("Error config:", error.config);

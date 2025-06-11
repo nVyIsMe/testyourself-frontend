@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import CourseCard from "./CourseCard";
-import { getAllCourses, createCourse, deleteCourse } from "../../api";
+import { getAllCourses, createCourse, deleteCourse, updateCourse } from "../../api";  // import thêm updateCourse
 import { Link } from "react-router-dom";
 
 const CourseList = () => {
@@ -11,11 +11,13 @@ const CourseList = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [editingCourse, setEditingCourse] = useState(null);  // Thêm state để theo dõi khóa học đang sửa
 
+  // Fetch courses from API
   const fetchCourses = () => {
     getAllCourses()
       .then((res) => {
-        setCourses(res.data);
+        setCourses(res.data); // Update courses with the data from API
         setLoading(false);
       })
       .catch((err) => {
@@ -25,7 +27,7 @@ const CourseList = () => {
   };
 
   useEffect(() => {
-    fetchCourses();
+    fetchCourses(); // Fetch courses when the component mounts
   }, []);
 
   const handleDelete = (id) => {
@@ -33,7 +35,7 @@ const CourseList = () => {
     deleteCourse(id)
       .then(() => {
         alert("Xoá thành công");
-        fetchCourses();
+        fetchCourses(); // Reload the course list after deletion
       })
       .catch(() => alert("Xoá thất bại"));
   };
@@ -49,9 +51,33 @@ const CourseList = () => {
         setShowAdd(false);
         setNewTitle("");
         setNewDescription("");
-        fetchCourses();
+        fetchCourses(); // Reload the course list after adding a new course
       })
       .catch(() => alert("Thêm khóa học thất bại"));
+  };
+
+  const handleEditCourse = (course) => {
+    setEditingCourse(course);
+    setNewTitle(course.name);
+    setNewDescription(course.description);
+  };
+
+  const handleUpdateCourse = () => {
+    if (!newTitle.trim()) {
+      alert("Tên khóa học không được để trống");
+      return;
+    }
+
+    // Gọi API để cập nhật khóa học
+    updateCourse(editingCourse.id, { name: newTitle, description: newDescription })
+      .then(() => {
+        alert("Cập nhật khóa học thành công");
+        setEditingCourse(null); // Reset the editing state
+        setNewTitle("");
+        setNewDescription("");
+        fetchCourses(); // Reload the course list after update
+      })
+      .catch(() => alert("Cập nhật khóa học thất bại"));
   };
 
   return (
@@ -59,23 +85,22 @@ const CourseList = () => {
       <Header current="My Courses" />
 
       {/* Banner */}
-      <section className="relative bg-[url('/HeroCenter2.png')] bg-cover bg-center h-30 sm:h-40 md:h-50 lg:h-65">
-      </section>
+      <section className="relative bg-[url('/HeroCenter2.png')] bg-cover bg-center h-30 sm:h-40 md:h-50 lg:h-65"></section>
 
       {/* Main content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-teal-600">My Quizzes</h2>
+          <h2 className="text-xl font-semibold text-teal-600">My Courses</h2>
           <button
             onClick={() => setShowAdd(true)}
             className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition"
           >
-            Add a set...
+            Add a course...
           </button>
         </div>
 
-        {/* Add Course Form */}
-        {showAdd && (
+        {/* Add or Edit Course Form */}
+        {(showAdd || editingCourse) && (
           <div className="mb-6 p-4 border border-gray-300 rounded bg-gray-50 max-w-lg mx-auto">
             <input
               type="text"
@@ -92,14 +117,23 @@ const CourseList = () => {
               rows={4}
             />
             <div className="flex justify-end gap-3">
+              {editingCourse ? (
+                <button
+                  onClick={handleUpdateCourse}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                >
+                  Cập nhật
+                </button>
+              ) : (
+                <button
+                  onClick={handleAddCourse}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                >
+                  Lưu
+                </button>
+              )}
               <button
-                onClick={handleAddCourse}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-              >
-                Lưu
-              </button>
-              <button
-                onClick={() => setShowAdd(false)}
+                onClick={() => { setShowAdd(false); setEditingCourse(null); }}
                 className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition"
               >
                 Huỷ
@@ -111,46 +145,13 @@ const CourseList = () => {
         {/* All Courses Section */}
         <section>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
-            {Array.from({ length: 8 }).map((_, idx) => (
-              <CourseCard
-                key={idx}
-                id={idx + 1}
-                title={idx === 0 ? "Course name" : "Card title"}
-                subtitle={idx === 0 ? "info eg status" : "Subtitle"}
-                description="Description 3 lines max. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor."
-              />
-            ))}
-          </div>
-          <div className="flex justify-between text-xs text-gray-400 mb-20">
-            <span>1 - 8 of 123</span>
-            <a className="text-teal-500 font-semibold hover:underline" href="#">
-              Load more
-            </a>
-          </div>
-        </section>
-
-        {/* Course Grid or Empty State */}
-        {loading ? (
-          <p className="text-center text-gray-500">Loading...</p>
-        ) : courses.length === 0 ? (
-          <div className="text-center mt-20">
-            <p className="text-lg text-gray-600 font-medium">Need more quizz?</p>
-            <p className="text-sm text-gray-400 mt-2">
-              Browse the available quizzes here.
-            </p>
-            <Link to="/browse">
-            <button className="mt-6 px-5 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition">
-              Browse Quizzes
-            </button>
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {courses.map((course) => (
+            {loading ? (
+              <p className="text-center text-gray-500">Loading...</p>
+            ) : (
+              courses.map((course) => (
                 <div
                   key={course.id}
-                  className="relative bg-white border border-gray-200 rounded-xl shadow hover:shadow-md transition p-4"
+                  className="relative bg-white border border-gray-200 rounded-xl shadow hover:shadow-md transition p-4 w-64 h-80" // Đảm bảo các khóa học có kích thước cố định
                 >
                   <CourseCard
                     id={course.id}
@@ -159,9 +160,7 @@ const CourseList = () => {
                   />
                   <div className="absolute top-2 right-2 flex gap-2">
                     <button
-                      onClick={() =>
-                        alert(`Chức năng sửa khóa học ${course.id} sẽ làm sau`)
-                      }
+                      onClick={() => handleEditCourse(course)}  // Kích hoạt form chỉnh sửa khi nhấn "Sửa"
                       className="px-2 py-1 text-xs bg-yellow-400 rounded hover:bg-yellow-500 transition"
                     >
                       Sửa
@@ -174,15 +173,32 @@ const CourseList = () => {
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              ))
+            )}
+          </div>
 
-            {/* Static Pagination Display */}
-            <div className="text-sm text-gray-500 mt-6 text-center">
-              1 – {courses.length} of 123
-              <button className="ml-3 text-teal-600 hover:underline">Load more</button>
-            </div>
-          </>
+          {/* Pagination */}
+          <div className="text-xs text-gray-400 mb-6">
+            <span>1 - {courses.length} of 123</span>
+            <a className="text-teal-500 font-semibold hover:underline" href="#">
+              Load more
+            </a>
+          </div>
+        </section>
+
+        {/* Empty State when no courses */}
+        {courses.length === 0 && !loading && (
+          <div className="text-center mt-20">
+            <p className="text-lg text-gray-600 font-medium">Need more courses?</p>
+            <p className="text-sm text-gray-400 mt-2">
+              Browse the available courses here.
+            </p>
+            <Link to="/browse">
+              <button className="mt-6 px-5 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition">
+                Browse Courses
+              </button>
+            </Link>
+          </div>
         )}
       </main>
 
