@@ -1,19 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import CourseCard from './CourseCard';
+import CourseCard from './CourseCard'; // Reusing CourseCard component
+import { getPublicCourses } from '../../api'; // Import API function
+import { toast } from 'react-toastify'; // For error notifications
 
 const CoursesBrowse = () => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getPublicCourses()
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setCourses(res.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch public courses:", err);
+        toast.error("Failed to load course list.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900">
-      <Header />
+      <Header current="Browse Quizzes" />
 
-      {/* Info Section */}
-      {/* Moved the descriptive text and the 'Notice Man' image into a dedicated section. */}
       <section className="bg-gray-100 relative px-10 py-10 md:py-16 md:px-20 overflow-hidden">
         <p className="max-w-4xl text-gray-700 text-base md:text-lg leading-relaxed">
           Browse the quizzes below. Click on one to view its details. If you're interested, take the quizz
-          and it will be added to your "My Quizzes" list
+          and it will be added to your "Recently Viewed Quizzes" list
         </p>
         <img
           alt="Notice Man"
@@ -25,28 +45,40 @@ const CoursesBrowse = () => {
         />
       </section>
 
-      {/* Main content area for courses */}
       <main className="max-w-7xl mx-auto px-6 py-8 md:px-12">
-        {/* All Courses Section */}
         <section>
-          <h2 className="font-semibold text-teal-600 mb-6">All Quizzes</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
-            {Array.from({ length: 8 }).map((_, idx) => (
-              <CourseCard
-                key={idx}
-                id={idx + 1}
-                title={idx === 0 ? "Course name" : "Card title"}
-                subtitle={idx === 0 ? "info eg status" : "Subtitle"}
-                description="Description 3 lines max. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor."
-              />
-            ))}
-          </div>
-          <div className="flex justify-between text-xs text-gray-400 mb-20">
-            <span>1 - 8 of 123</span>
-            <a className="text-teal-500 font-semibold hover:underline" href="#">
-              Load more
-            </a>
-          </div>
+          <h2 className="font-semibold text-teal-600 mb-6">All Published Quizzes</h2>
+          
+          {loading ? (
+            <div className="text-center py-10">
+              <p className="text-gray-500 text-lg">Loading quizzes...</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-6">
+                {courses.length > 0 ? (
+                  courses.map((course) => (
+                    <CourseCard
+                      key={course.id}
+                      id={course.id}
+                      title={course.name}
+                      description={course.description}
+                      image={course.image}
+                      isPublished={course.is_published}
+                      linkTo="play" // Navigate to quiz play page
+                    />
+                  ))
+                ) : (
+                  <p className="col-span-full text-center text-gray-500 py-10">
+                    No quizzes have been published yet.
+                  </p>
+                )}
+              </div>
+              <div className="flex justify-between text-xs text-gray-400 mb-20">
+                <span>1 - {courses.length} / {courses.length}</span>
+              </div>
+            </>
+          )}
         </section>
       </main>
 

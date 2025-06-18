@@ -16,10 +16,10 @@ const Register = () => {
         password,
         name,
       });
-      alert('Đăng ký thành công!');
+      alert('Registration successful!');
       navigate('/login');
     } catch (err) {
-      alert(err.response?.data?.error || 'Đăng ký thất bại');
+      alert(err.response?.data?.error || 'Registration failed.');
     }
   };
 
@@ -35,27 +35,27 @@ const Register = () => {
         />
 
         <h1 className="text-center text-black text-xl font-medium mb-4">
-          Tạo tài khoản mới
+          Create a new account
         </h1>
 
         <form onSubmit={handleRegister} className="w-full max-w-xs mb-4">
           <input
             type="text"
-            placeholder="Tên người dùng"
+            placeholder="Username"
             className="w-full mb-2 px-4 py-2 border rounded"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
           <input
             type="text"
-            placeholder="Tên hiển thị"
+            placeholder="Display Name"
             className="w-full mb-2 px-4 py-2 border rounded"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <input
             type="password"
-            placeholder="Mật khẩu"
+            placeholder="Password"
             className="w-full mb-4 px-4 py-2 border rounded"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -64,16 +64,16 @@ const Register = () => {
             type="submit"
             className="w-full bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700 transition"
           >
-            Đăng ký
+            Register
           </button>
         </form>
 
-        {/* ✅ Nút chuyển sang đăng nhập (cùng style với nút đăng nhập Google) */}
         <button
           onClick={() => navigate('/login')}
           className="w-full max-w-xs flex items-center justify-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors"
         >
-          Bạn đã có tài khoản? <span className="ml-1 font-medium text-emerald-600">Đăng nhập</span>
+          Already have an account?
+          <span className="ml-1 font-medium text-emerald-600">Login</span>
         </button>
       </main>
     </div>

@@ -1,90 +1,191 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Header from "../../components/Header";
-import QuizOption from "./QuizOption";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getPublicQuizDetail, getPublicQuizQuestions } from '../../api';
+import { toast } from 'react-toastify';
+import Header from '../../components/Header';
 
-  const Quiz = () => {
+const Quiz = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [selected, setSelected] = useState(null);
-  
-  const currentQuestion = parseInt(id) || 1;
-  const totalQuestions = 8;
 
-  const handleNext = () => {
-    if (selected !== null) {
-      if (currentQuestion < totalQuestions) {
-        navigate(`/quiz/${currentQuestion + 1}`);
-      } else {
-        navigate(`/quiz/${id}/complete`);
+  const [course, setCourse] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [userAnswers, setUserAnswers] = useState({});
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleNextQuestion = useCallback(() => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+      setTimeLeft(30);
+    } else {
+      handleSubmitQuiz();
+    }
+  }, [currentQuestionIndex, questions.length]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [courseRes, questionsRes] = await Promise.all([
+          getPublicQuizDetail(id),
+          getPublicQuizQuestions(id)
+        ]);
+
+        setCourse(courseRes.data);
+        const parsedQuestions = questionsRes.data.map(card => {
+          const backData = JSON.parse(card.back);
+          return { id: card.id, questionText: card.front, ...backData };
+        });
+        setQuestions(parsedQuestions);
+
+        if (parsedQuestions.length === 0) {
+          toast.error("This quiz has no questions.");
+          navigate('/browse');
+        }
+
+      } catch (error) {
+        console.error("Failed to load public quiz data:", error);
+        toast.error("Failed to load quiz. It may not exist or hasn’t been published.");
+        navigate('/browse');
+      } finally {
+        setIsLoading(false);
       }
+    };
+    loadData();
+  }, [id, navigate]);
+
+  useEffect(() => {
+    if (!questions || questions.length === 0) return;
+
+    if (timeLeft <= 0) {
+      toast.info("Time's up! Moving to the next question.");
+      handleNextQuestion();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft(prevTime => prevTime - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, handleNextQuestion, questions]);
+
+  const handleAnswerSelect = (questionId, answer) => {
+    setUserAnswers(prev => ({ ...prev, [questionId]: answer }));
+  };
+
+  const handlePrevQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prevIndex => prevIndex - 1);
+      setTimeLeft(30);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-white">
-      <Header current="My Courses" />
+  const handleSubmitQuiz = () => {
+    console.log("Final answers:", userAnswers);
+    toast.success("You’ve completed the quiz!");
+    navigate(`/quiz/${id}/complete`, {
+      state: { answers: userAnswers, questions: questions }
+    });
+  };
 
-      <main className="flex flex-col md:flex-row max-w-6xl mx-auto px-6 py-12 gap-10">
-        {/* Question Section */}
-        <section className="flex-1">
-          <div className="text-sm text-[#8B9AB1] font-medium mb-1">
-            QUESTION ({currentQuestion})
+  if (isLoading || !questions.length) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        Preparing your quiz...
+      </div>
+    );
+  }
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <Header />
+      <main className="flex-1 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+          {/* Quiz Header */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
+              <span>Question {currentQuestionIndex + 1} / {questions.length}</span>
+              <div className="flex items-center gap-2">
+                <i className="far fa-clock"></i>
+                <span>{timeLeft}s</span>
+              </div>
+            </div>
+            {/* Progress bar */}
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-green-500 h-2 rounded-full" style={{ width: `${progressPercentage}%` }}></div>
+            </div>
           </div>
-          <h2 className="text-3xl font-bold mb-6 text-gray-500">Sample Question {currentQuestion}?</h2>
-          <div className="space-y-4">
-            {["Answer 1", "Answer 2", "Answer 3", "Answer 4"].map(
-              (ans, idx) => (
-                <QuizOption
-                  key={idx}
-                  selected={selected === idx}
-                  onClick={() => setSelected(idx)}
+
+          {/* Question Text */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">{currentQuestion.questionText}</h2>
+          </div>
+
+          {/* Answer Area */}
+          {currentQuestion.type === 'multipleChoice' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentQuestion.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswerSelect(currentQuestion.id, option.text)}
+                  className={`p-4 rounded-lg text-left text-gray-900 font-semibold border-2 transition-transform transform hover:scale-105 ${
+                    userAnswers[currentQuestion.id] === option.text
+                      ? 'border-purple-600 bg-purple-100'
+                      : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+                  }`}
                 >
-                  {ans}
-                </QuizOption>
-              )
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {currentQuestion.type === 'fillInTheBlank' && (
+            <div className="flex justify-center">
+              <input
+                type="text"
+                value={userAnswers[currentQuestion.id] || ''}
+                onChange={(e) => handleAnswerSelect(currentQuestion.id, e.target.value)}
+                placeholder="Enter your answer..."
+                className="w-full md:w-3/4 p-4 border-2 border-gray-300 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-10">
+            <button
+              onClick={handlePrevQuestion}
+              disabled={currentQuestionIndex === 0}
+              className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+
+            {currentQuestionIndex < questions.length - 1 ? (
+              <button
+                onClick={handleNextQuestion}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmitQuiz}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
+              >
+                Submit
+              </button>
             )}
           </div>
-        </section>
-
-        {/* Image Section */}
-        <section className="flex-1 bg-[#E9F0F5] rounded-lg shadow-md p-6 flex items-center justify-center aspect-[4/3]">
-          <img
-            src="https://storage.googleapis.com/a1aa/image/58bbf0b5-8f10-495f-308a-07ee978ba6c9.jpg"
-            alt="Question Visual"
-            className="max-h-full max-w-full object-contain rounded-md"
-          />
-        </section>
+        </div>
       </main>
-
-      {/* Progress + Navigation Footer */}
-      <footer className="bg-[#E9F0F5] max-w-6xl mx-auto px-6 py-4 rounded-t-lg shadow-inner">
-        <div className="flex items-center justify-between text-sm text-[#8B9AB1]">
-          <button 
-            className="border border-[#1AA99F] text-[#1AA99F] rounded-full px-4 py-1.5 hover:bg-[#d0f0ef] transition disabled:opacity-50"
-            onClick={() => navigate(`/quiz/${currentQuestion - 1}`)}
-            disabled={currentQuestion <= 1}
-          >
-            Prev
-          </button>
-          <span>{currentQuestion} of {totalQuestions}</span>
-          <button
-            onClick={handleNext}
-            className="bg-[#1AA99F] text-white rounded-full px-6 py-2 hover:bg-[#178a87] disabled:opacity-50 transition"
-            disabled={selected === null}
-          >
-            {currentQuestion === totalQuestions ? 'Complete' : 'Next'}
-          </button>
-        </div>
-
-        {/* Optional: Progress bar */}
-        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-4">
-          <div
-            className="h-full bg-[#1AA99F] transition-all"
-            style={{ width: `${(currentQuestion / totalQuestions) * 100}%` }}
-          ></div>
-        </div>
-      </footer>
     </div>
   );
 };
