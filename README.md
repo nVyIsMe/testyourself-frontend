@@ -1,4 +1,3 @@
-TestYourself Frontend
 This is the frontend client of the TestYourself flashcard application. Built using React + Vite + TailwindCSS, it provides a modern, responsive UI for creating, studying, and sharing flashcards.
 
 ⚙️ Tech Stack
